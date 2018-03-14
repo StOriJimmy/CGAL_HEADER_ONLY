@@ -745,6 +745,336 @@ shape. The implementation follows \cgalCite{schnabel2007efficient}.
       return true;
     }
 
+	bool detect_from_line(
+		const Parameters &options = Parameters()
+		///< %Parameters for shape detection.
+	) {
+		// No shape types for detection or no points provided, exit
+		if (m_shape_factories.size() == 0 ||
+			(m_input_iterator_beyond - m_input_iterator_first) == 0)
+			return false;
+
+		if (m_num_subsets == 0 || m_global_octree == 0) {
+			if (!preprocess())
+				return false;
+		}
+
+		// Reset data structures possibly used by former search
+		m_extracted_shapes =
+			boost::make_shared<std::vector<boost::shared_ptr<Shape> > >();
+		m_num_available_points = m_num_total_points;
+
+		for (std::size_t i = 0; i < m_num_subsets; i++) {
+			m_available_octree_sizes[i] = m_direct_octrees[i]->size();
+		}
+
+		// Use bounding box diagonal as reference for default values
+		Bbox_3 bbox = m_global_octree->boundingBox();
+		FT bbox_diagonal = (FT)CGAL::sqrt(
+			(bbox.xmax() - bbox.xmin()) * (bbox.xmax() - bbox.xmin())
+			+ (bbox.ymax() - bbox.ymin()) * (bbox.ymax() - bbox.ymin())
+			+ (bbox.zmax() - bbox.zmin()) * (bbox.zmax() - bbox.zmin()));
+
+		m_options = options;
+
+		// Epsilon or cluster_epsilon have been set by the user?
+		// If not, derive from bounding box diagonal
+		m_options.epsilon = (m_options.epsilon < 0)
+			? bbox_diagonal * (FT) 0.01 : m_options.epsilon;
+
+		m_options.cluster_epsilon = (m_options.cluster_epsilon < 0)
+			? bbox_diagonal * (FT) 0.01 : m_options.cluster_epsilon;
+
+		// Minimum number of points has been set?
+		m_options.min_points =
+			(m_options.min_points >= m_num_available_points) ?
+			(std::size_t)((FT)0.01 * m_num_available_points) :
+			m_options.min_points;
+		m_options.min_points = (m_options.min_points < 10) ? 10 : m_options.min_points;
+
+		// Initializing the shape index
+		m_shape_index.assign(m_num_available_points, -1);
+
+		// List of all randomly drawn candidates
+		// with the minimum number of points
+		std::vector<Shape *> candidates;
+
+		// Identifying minimum number of samples
+		std::size_t required_samples = 0;
+		for (std::size_t i = 0; i < m_shape_factories.size(); i++) {
+			Shape *tmp = (Shape *)m_shape_factories[i]();
+			required_samples = (std::max<std::size_t>)(required_samples, tmp->minimum_sample_size());
+			delete tmp;
+		}
+
+		std::size_t first_sample; // first sample for RANSAC
+
+		FT best_expected = 0;
+
+		// number of points that have been assigned to a shape
+		std::size_t num_invalid = 0;
+
+		std::size_t generated_candidates = 0;
+		std::size_t failed_candidates = 0;
+		bool force_exit = false;
+		bool keep_searching = true;
+
+		do { // main loop
+			best_expected = 0;
+
+			if (keep_searching)
+				do {
+					// Generate candidates
+					//1. pick a point p1 randomly among available points
+					std::set<std::size_t> indices;
+					bool done = false;
+					do {
+						do
+							first_sample = get_default_random()(m_num_available_points);
+						while (m_shape_index[first_sample] != -1);
+
+						done = m_global_octree->drawSamplesFromCellContainingPoint(
+							get(m_point_pmap,
+								*(m_input_iterator_first + first_sample)),
+							select_random_octree_level(),
+							indices,
+							m_shape_index,
+							required_samples);
+
+					} while (m_shape_index[first_sample] != -1 || !done);
+
+					generated_candidates++;
+
+					//add candidate for each type of primitives
+					for (typename std::vector<Shape *(*)()>::iterator it =
+						m_shape_factories.begin(); it != m_shape_factories.end(); it++) {
+						Shape *p = (Shape *)(*it)();
+						//compute the primitive and says if the candidate is valid
+						p->compute(indices,
+							m_input_iterator_first,
+							m_traits,
+							m_point_pmap,
+							m_normal_pmap,
+							m_options.epsilon,
+							m_options.normal_threshold);
+
+						if (p->is_valid()) {
+							improve_bound(p, m_num_available_points - num_invalid, 1, 500);
+
+							//evaluate the candidate
+							if (p->max_bound() >= m_options.min_points && p->score() > 0) {
+								if (best_expected < p->expected_value())
+									best_expected = p->expected_value();
+
+								candidates.push_back(p);
+							}
+							else {
+								failed_candidates++;
+								delete p;
+							}
+						}
+						else {
+							failed_candidates++;
+							delete p;
+						}
+					}
+
+					if (failed_candidates >= 10000)
+						force_exit = true;
+
+					keep_searching = (stop_probability(m_options.min_points,
+						m_num_available_points - num_invalid,
+						generated_candidates, m_global_octree->maxLevel())
+								> m_options.probability);
+				} while (!force_exit
+					&& stop_probability((std::size_t) best_expected,
+						m_num_available_points - num_invalid,
+						generated_candidates,
+						m_global_octree->maxLevel())
+		> m_options.probability
+					&& keep_searching);
+				// end of generate candidate
+
+				if (force_exit) {
+					break;
+				}
+
+				if (candidates.empty())
+					continue;
+
+				// Now get the best candidate in the current set of all candidates
+				// Note that the function sorts the candidates:
+				//  the best candidate is always the last element of the vector
+
+				Shape *best_candidate =
+					get_best_candidate(candidates, m_num_available_points - num_invalid);
+
+				// If search is done and the best candidate is too small, we are done.
+				if (!keep_searching && best_candidate->m_score < m_options.min_points)
+					break;
+
+				if (!best_candidate)
+					continue;
+
+				best_candidate->m_indices.clear();
+
+				best_candidate->m_score =
+					m_global_octree->score(best_candidate,
+						m_shape_index,
+						FT(3) * m_options.epsilon,
+						m_options.normal_threshold);
+
+				best_expected = static_cast<FT>(best_candidate->m_score);
+
+				best_candidate->connected_component(best_candidate->m_indices,
+					m_options.cluster_epsilon);
+
+				// check score against min_points and clear out candidates if too low
+				if (best_candidate->indices_of_assigned_points().size() <
+					m_options.min_points)
+				{
+					if (!(best_candidate->indices_of_assigned_points().empty()))
+						for (std::size_t i = 0; i < candidates.size() - 1; i++) {
+							if (best_candidate->is_same(candidates[i])) {
+								delete candidates[i];
+								candidates[i] = NULL;
+							}
+						}
+
+					candidates.back() = NULL;
+					delete best_candidate;
+					best_candidate = NULL;
+
+					// Trimming candidates list
+					std::size_t empty = 0, occupied = 0;
+					while (empty < candidates.size()) {
+						while (empty < candidates.size() && candidates[empty]) empty++;
+
+						if (empty >= candidates.size())
+							break;
+
+						if (occupied < empty)
+							occupied = empty + 1;
+
+						while (occupied < candidates.size() && !candidates[occupied])
+							occupied++;
+
+						if (occupied >= candidates.size())
+							break;
+						candidates[empty] = candidates[occupied];
+						candidates[occupied] = NULL;
+						empty++;
+						occupied++;
+					}
+
+					candidates.resize(empty);
+				}
+				else
+					if (stop_probability((std::size_t) best_candidate->expected_value(),
+						(m_num_available_points - num_invalid),
+						generated_candidates,
+						m_global_octree->maxLevel())
+						<= m_options.probability) {
+
+						// Remove candidate from list
+						candidates.back() = NULL;
+
+						//1. add best candidate to final result.
+						m_extracted_shapes->push_back(
+							boost::shared_ptr<Shape>(best_candidate));
+
+						//2. remove the points
+						const std::vector<std::size_t> &indices_points_best_candidate =
+							best_candidate->indices_of_assigned_points();
+
+						for (std::size_t i = 0; i < indices_points_best_candidate.size(); i++) {
+							m_shape_index[indices_points_best_candidate.at(i)] =
+								int(m_extracted_shapes->size()) - 1;
+
+							num_invalid++;
+
+							for (std::size_t j = 0; j < m_num_subsets; j++) {
+								if (m_direct_octrees[j] && m_direct_octrees[j]->m_root) {
+									std::size_t offset = m_direct_octrees[j]->offset();
+
+									if (offset <= indices_points_best_candidate.at(i) &&
+										(indices_points_best_candidate.at(i) - offset)
+										< m_direct_octrees[j]->size()) {
+										m_available_octree_sizes[j]--;
+									}
+								}
+							}
+						}
+
+						//2.3 Remove the points from the subtrees        
+
+						generated_candidates--;
+						failed_candidates = 0;
+						best_expected = 0;
+
+						std::vector<std::size_t> subset_sizes(m_num_subsets);
+						subset_sizes[0] = m_available_octree_sizes[0];
+						for (std::size_t i = 1; i < m_num_subsets; i++) {
+							subset_sizes[i] = subset_sizes[i - 1] + m_available_octree_sizes[i];
+						}
+
+
+						//3. Remove points from candidates common with extracted primitive
+						//#pragma omp parallel for
+						best_expected = 0;
+						for (std::size_t i = 0; i < candidates.size() - 1; i++) {
+							if (candidates[i]) {
+								candidates[i]->update_points(m_shape_index);
+								candidates[i]->compute_bound(
+									subset_sizes[candidates[i]->m_nb_subset_used - 1],
+									m_num_available_points - num_invalid);
+
+								if (candidates[i]->max_bound() < m_options.min_points) {
+									delete candidates[i];
+									candidates[i] = NULL;
+								}
+								else {
+									best_expected = (candidates[i]->expected_value() > best_expected) ?
+										candidates[i]->expected_value() : best_expected;
+								}
+							}
+						}
+
+						std::size_t start = 0, end = candidates.size() - 1;
+						while (start < end) {
+							while (candidates[start] && start < end) start++;
+							while (!candidates[end] && start < end) end--;
+							if (!candidates[start] && candidates[end] && start < end) {
+								candidates[start] = candidates[end];
+								candidates[end] = NULL;
+								start++;
+								end--;
+							}
+						}
+
+						if (candidates[end]) end++;
+
+						candidates.resize(end);
+					}
+				keep_searching = (stop_probability(m_options.min_points,
+					m_num_available_points - num_invalid,
+					generated_candidates,
+					m_global_octree->maxLevel())
+							> m_options.probability);
+		} while ((keep_searching
+			&& FT(m_num_available_points - num_invalid) >= m_options.min_points)
+			|| best_expected >= m_options.min_points);
+
+		// Clean up remaining candidates.
+		for (std::size_t i = 0; i < candidates.size(); i++)
+			delete candidates[i];
+
+		candidates.resize(0);
+
+		m_num_available_points -= num_invalid;
+
+		return true;
+	}
     /// @}
 
     /// \name Access
