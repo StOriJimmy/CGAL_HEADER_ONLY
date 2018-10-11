@@ -1,4 +1,5 @@
-// Copyright (c) 2006  Utrecht University (The Netherlands),
+// Copyright (c) 2009  
+// Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
@@ -19,20 +20,18 @@
 //
 // Author(s)     : -
 
-// This file is automatically created by create_internal_release.
+// This file is automatically created by cmake
 // Do not edit manually.
 
 #ifndef CGAL_VERSION_H
 #define CGAL_VERSION_H
 
-#define CGAL_xstr(s) #s
-#define CGAL_str(s) CGAL_xstr(s)
-
-#define CGAL_VERSION 4.13
-#define CGAL_VERSION_NR 1041301000
+#define CGAL_VERSION 4.14-I-900
+#define CGAL_VERSION_NR 1041400900
 #define CGAL_SVN_REVISION 99999
-#define CGAL_GIT_HASH f89266bf4fb44fa54395d8ff6db68181302aacef
-#define CGAL_RELEASE_DATE 20180731
-#define CGAL_VERSION_STR CGAL_str(CGAL_VERSION)
+
+#define CGAL_RELEASE_DATE 20181009
+
+#include <CGAL/version_macros.h>
 
 #endif
