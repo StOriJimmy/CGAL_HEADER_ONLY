@@ -14,6 +14,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     :  Olivier Devillers
 
@@ -32,8 +33,8 @@ namespace internal {
 
     template <class K, int x>
     struct Fixed_hilbert_cmp_3<K,x,true>
-        : public std::binary_function<typename K::Point_3,
-                                      typename K::Point_3, bool>
+        : public CGAL::cpp98::binary_function<typename K::Point_3,
+                                              typename K::Point_3, bool>
     {
         typedef typename K::Point_3 Point;
         K k;
@@ -47,8 +48,8 @@ namespace internal {
 
     template <class K>
     struct Fixed_hilbert_cmp_3<K,0,false>
-        : public std::binary_function<typename K::Point_3,
-                                      typename K::Point_3, bool>
+        : public CGAL::cpp98::binary_function<typename K::Point_3,
+                                              typename K::Point_3, bool>
     {
         typedef typename K::Point_3 Point;
         K k;
@@ -62,8 +63,8 @@ namespace internal {
 
     template <class K>
     struct Fixed_hilbert_cmp_3<K,1,false>
-        : public std::binary_function<typename K::Point_3,
-                                      typename K::Point_3, bool>
+        : public CGAL::cpp98::binary_function<typename K::Point_3,
+                                              typename K::Point_3, bool>
     {
         typedef typename K::Point_3 Point;
         K k;
@@ -77,8 +78,8 @@ namespace internal {
 
     template <class K>
     struct Fixed_hilbert_cmp_3<K,2,false>
-        : public std::binary_function<typename K::Point_3,
-                                      typename K::Point_3, bool>
+        : public CGAL::cpp98::binary_function<typename K::Point_3,
+                                              typename K::Point_3, bool>
     {
         typedef typename K::Point_3 Point;
         K k;

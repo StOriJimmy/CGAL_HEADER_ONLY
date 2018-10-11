@@ -20,8 +20,6 @@
 
 //#define CGAL_CFG_MATCHING_BUG_8 1
 
-//#define CGAL_CFG_NESTED_CLASS_FRIEND_DECLARATION_BUG 1
-
 //#define CGAL_CFG_NO_LIMITS 1
 
 //#define CGAL_CFG_NO_NEXTAFTER 1
@@ -57,4 +55,6 @@
 #define CGAL_USE_CORE 1
 
 #define CGAL_HAS_IMAGEIO 1
+
+#define CGAL_HAS_QT5 1
 

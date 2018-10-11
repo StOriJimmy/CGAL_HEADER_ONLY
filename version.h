@@ -15,6 +15,8 @@
 // This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 //
+// SPDX-License-Identifier: LGPL-3.0+
+//
 // Author(s)     : -
 
 // This file is automatically created by create_internal_release.
@@ -26,11 +28,11 @@
 #define CGAL_xstr(s) #s
 #define CGAL_str(s) CGAL_xstr(s)
 
-#define CGAL_VERSION 4.11
-#define CGAL_VERSION_NR 1041101000
+#define CGAL_VERSION 4.13
+#define CGAL_VERSION_NR 1041301000
 #define CGAL_SVN_REVISION 99999
-#define CGAL_GIT_HASH a7caa5c433f3c0d53553ce2e5fc7f2f1106d3725
-#define CGAL_RELEASE_DATE 20170920
+#define CGAL_GIT_HASH f89266bf4fb44fa54395d8ff6db68181302aacef
+#define CGAL_RELEASE_DATE 20180731
 #define CGAL_VERSION_STR CGAL_str(CGAL_VERSION)
 
 #endif
