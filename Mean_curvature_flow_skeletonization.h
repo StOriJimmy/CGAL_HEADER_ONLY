@@ -93,8 +93,8 @@ template < class Refs, class Point, class ID, class vertex_descriptor>
 struct Skel_HDS_vertex_type : public HalfedgeDS_vertex_max_base_with_id<Refs, Point, ID>
 {
   typedef HalfedgeDS_vertex_max_base_with_id<Refs, Point, ID> Base;
-  Skel_HDS_vertex_type() : Base (), is_fixed(false)  {}
-  Skel_HDS_vertex_type( Point const& p) : Base(p), is_fixed(false) {}
+  Skel_HDS_vertex_type() : Base (), pole(ORIGIN), is_fixed(false)  {}
+  Skel_HDS_vertex_type( Point const& p) : Base(p), pole(ORIGIN), is_fixed(false) {}
   std::vector<vertex_descriptor> vertices;
   Point pole;
   bool is_fixed;
@@ -112,7 +112,7 @@ struct Skel_polyhedron_items_3: CGAL::Polyhedron_items_with_id_3 {
 } //end of namespace internal
 
 
-/// \ingroup PkgMeanCurvatureSkeleton3
+/// \ingroup PkgSurfaceMeshSkeletonizationRef
 /// Function object that enables to extract the mean curvature
 /// flow skeleton of a triangulated surface mesh.
 ///
@@ -463,6 +463,7 @@ public:
   /// \name Vertex Motion Parameters
   /// @{
 
+  /// \cgalAdvancedFunction
   /// \cgalAdvancedBegin
   /// Controls the velocity of movement and approximation quality:
   /// decreasing this value makes the mean curvature flow based contraction converge
@@ -482,7 +483,8 @@ public:
   {
     return m_is_medially_centered;
   }
-
+  
+  /// \cgalAdvancedFunction
   /// \cgalAdvancedBegin
   /// Controls the smoothness of the medial approximation:
   /// increasing this value results in a (less smooth) skeleton closer

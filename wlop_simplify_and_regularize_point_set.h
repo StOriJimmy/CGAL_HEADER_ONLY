@@ -78,9 +78,7 @@ public:
   Kd_tree_element(const Base& p, unsigned int id=0)
     : Base(p), index(id)
   {}
-  Kd_tree_element(const Kd_tree_element& other)
-    : Base(other), index(other.index)
-  {}
+
 };
 
 // Helper class for the Kd-tree
@@ -407,7 +405,7 @@ public:
 // ----------------------------------------------------------------------------
 
 /**
-   \ingroup PkgPointSetProcessingAlgorithms
+   \ingroup PkgPointSetProcessing3Algorithms
    This is an implementation of the Weighted Locally Optimal Projection (WLOP) simplification algorithm.
    The WLOP simplification algorithm can produce a set of 
    denoised, outlier-free and evenly distributed particles over the original 

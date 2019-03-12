@@ -30,7 +30,7 @@
 #define CGAL_VERSION_NR 1041400900
 #define CGAL_SVN_REVISION 99999
 
-#define CGAL_RELEASE_DATE 20181230
+#define CGAL_RELEASE_DATE 20190312
 
 #include <CGAL/version_macros.h>
 

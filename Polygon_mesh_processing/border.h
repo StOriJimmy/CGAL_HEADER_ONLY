@@ -147,7 +147,7 @@ namespace Polygon_mesh_processing {
   }//end namespace internal
 
   /*!
-  \ingroup PkgPolygonMeshProcessing
+  \ingroup PkgPolygonMeshProcessingRef
   * collects the border halfedges of a surface patch defined as a face range.
   * For each returned halfedge `h`, `opposite(h, pmesh)` belongs to a face of the patch,
   * but `face(h, pmesh)` does not belong to the patch.
@@ -258,7 +258,7 @@ namespace Polygon_mesh_processing {
     return border_counter;
   }
 
-  /// @ingroup PkgPolygonMeshProcessing
+  /// @ingroup PkgPolygonMeshProcessingRef
   /// extracts boundary cycles as a list of halfedges, with one halfedge per border.
   ///
   /// @tparam PolygonMesh a model of `HalfedgeListGraph`

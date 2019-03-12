@@ -92,6 +92,10 @@ public:
   Kd_tree_element(const Kd_tree_element& other)
     : Base(other), index(other.index)
   {}
+  
+#ifndef CGAL_CFG_NO_CPP0X_DELETED_AND_DEFAULT_FUNCTIONS
+  Kd_tree_element& operator=(const Kd_tree_element&)=default;
+#endif  
 };
 
 
@@ -387,7 +391,7 @@ public:
 
 
 /**
-   \ingroup PkgPointSetProcessingAlgorithms
+   \ingroup PkgPointSetProcessing3Algorithms
  
    This function smooths an input point set by iteratively projecting each 
    point onto the implicit surface patch fitted over its k nearest neighbors.
