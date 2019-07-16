@@ -17,29 +17,29 @@
 // SPDX-License-Identifier: GPL-3.0+
 //
 //
-// Author(s)     : Sven Oesau, Yannick Verdie, Clément Jamin, Pierre Alliez
+// Author(s)     : Sven Oesau, Yannick Verdie, Clément Jamin, Pierre Alliez, Florent Lafarge, Simon Giraudot, Thien Hoang, Dmitry Anisimov
 //
 
-/**
-* \ingroup PkgPointSetShapeDetection3Ref
-* \file CGAL/Shape_detection_3.h
-* Convenience header file including the headers of this package.
-*/
+#ifndef CGAL_SHAPE_DETECTION_3_DEPRECATED_H
+#define CGAL_SHAPE_DETECTION_3_DEPRECATED_H
 
+#include <CGAL/license/Shape_detection.h>
 
-#ifndef CGAL_SHAPE_DETECTION_3_H
-#define CGAL_SHAPE_DETECTION_3_H
+#include <CGAL/Shape_detection/Efficient_RANSAC.h>
 
-#include <CGAL/license/Point_set_shape_detection_3.h>
+// Deprecated -->
+#include <CGAL/Shape_detection/deprecated/Region_growing.h>
+#include <CGAL/Shape_detection/deprecated/Shape_detection_traits.h>
 
-#include <CGAL/Shape_detection_3/Efficient_RANSAC.h>
-#include <CGAL/Shape_detection_3/Region_growing.h>
-#include <CGAL/Shape_detection_3/Shape_detection_traits.h>
-#include <CGAL/Shape_detection_3/Plane.h>
-#include <CGAL/Shape_detection_3/Cylinder.h>
-#include <CGAL/Shape_detection_3/Cone.h>
-#include <CGAL/Shape_detection_3/Torus.h>
-#include <CGAL/Shape_detection_3/Sphere.h>
-#include <CGAL/Shape_detection_3/property_maps.h>
+#define CGAL_DEPRECATED_MESSAGE_DETAILS \
+  "CGAL::Shape_detection_3 namespace has been replaced by the namespace "\
+  "CGAL::Shape_detection."
+  
+#include <CGAL/internal/deprecation_warning.h>
 
-#endif //CGAL_SHAPE_DETECTION_3_H
+namespace CGAL {
+  namespace Shape_detection_3 = Shape_detection;
+}
+// --<
+
+#endif // CGAL_SHAPE_DETECTION_3_DEPRECATED_H
