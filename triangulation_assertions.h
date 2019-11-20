@@ -27,8 +27,7 @@
 #undef CGAL_triangulation_assertion_msg
 #undef CGAL_triangulation_assertion_code
 
-#if defined(CGAL_TRIANGULATION_NO_ASSERTIONS) || defined(CGAL_NO_ASSERTIONS) \
-  || defined(NDEBUG)
+#if defined(CGAL_TRIANGULATION_NO_ASSERTIONS) //|| defined(CGAL_NO_ASSERTIONS) \ || defined(NDEBUG)
 #  define CGAL_triangulation_assertion(EX) (static_cast<void>(0))
 
 
@@ -113,8 +112,8 @@
 #undef CGAL_triangulation_precondition_msg
 #undef CGAL_triangulation_precondition_code
 
-#if defined(CGAL_TRIANGULATION_NO_PRECONDITIONS) || defined(CGAL_NO_PRECONDITIONS) \
-  || defined(NDEBUG)
+#if defined(CGAL_TRIANGULATION_NO_PRECONDITIONS) 
+//|| defined(CGAL_NO_PRECONDITIONS) || defined(NDEBUG) 
 #  define CGAL_triangulation_precondition(EX) (static_cast<void>(0))
 #  define CGAL_triangulation_precondition_msg(EX,MSG) (static_cast<void>(0))
 #  define CGAL_triangulation_precondition_code(CODE)

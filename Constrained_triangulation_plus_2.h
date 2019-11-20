@@ -926,9 +926,9 @@ insert_subconstraint(Vertex_handle vaa,
                            conflict_boundary_ab,
                            conflict_boundary_ba);
 
-    this->get_bounded_faces(edges.begin(),
-                            edges.end(),
-                            out);
+//     this->get_bounded_faces(edges.begin(),
+//                             edges.end(),
+//                             out);
 
     if (vi != vbb) {
       hierarchy.split_constraint(vaa,vbb,vi);
